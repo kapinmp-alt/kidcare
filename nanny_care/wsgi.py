@@ -8,20 +8,22 @@ https://docs.djangoproject.com/en/4.0/howto/deployment/wsgi/
 """
 
 import os
+import sys
+import traceback
 
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'nanny_care.settings')
 
-# Ensure migrations are applied at startup so deployed instances have required tables.
-# This helps on platforms where startup commands may not run migrations reliably.
+# Attempt to run migrations at startup so deployed instances have required tables.
+# Log any errors to stderr so the hosting service captures them in logs.
 try:
-	# Import here to avoid heavy imports at module import time in some contexts
 	from django.core.management import call_command
+	print('Running migrations at WSGI startup...', file=sys.stderr)
 	call_command('migrate', '--noinput')
+	print('Migrations complete.', file=sys.stderr)
 except Exception:
-	# If migrations fail for any reason, don't crash the WSGI process here;
-	# the error will appear in logs and can be investigated.
-	pass
+	print('Error running migrations at WSGI startup:', file=sys.stderr)
+	traceback.print_exc(file=sys.stderr)
 
 application = get_wsgi_application()
