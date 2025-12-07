@@ -357,3 +357,43 @@ Nanny-Care-development
 └─ staticfiles
 
 ```
+
+## Deploying to Render
+
+This repository is ready to deploy to Render (https://render.com). Follow these steps:
+
+1. Push your code to GitHub (if not already):
+
+```bash
+git add -A
+git commit -m "Prepare for Render deployment"
+git push origin main
+```
+
+2. Create a new Web Service on Render and connect your GitHub repo.
+
+3. In the Render service settings set these Environment variables:
+
+- `SECRET_KEY` — a secure random string (do NOT use the dev default in production)
+- `MODE` — set to `prod`
+- `DEBUG` — set to `False`
+- `ALLOWED_HOSTS` — e.g. `your-app.onrender.com`
+- `DATABASE_URL` — if you attach a managed Postgres instance or external DB
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — if using Cloudinary
+
+4. Build & Start commands (Render UI or `render.yaml`):
+
+- Build command: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
+- Start command: `gunicorn nanny_care.wsgi`
+
+5. Add a managed Postgres database via Render (optional but recommended). When you attach a Postgres database, Render will set `DATABASE_URL` automatically.
+
+6. Deploy and monitor the build logs. After deployment, visit the Render URL to verify the site.
+
+Notes:
+
+- This project uses `whitenoise` for static files in production and will run `collectstatic` during build.
+- Ensure `SECRET_KEY` is kept secret and never committed.
+- Remove any hard-coded secrets from source — this repo now reads Cloudinary values from env.
+
+I also added a `render.yaml` template in the repo to help declare the service. You can edit it and push it, or configure the service via the Render dashboard.

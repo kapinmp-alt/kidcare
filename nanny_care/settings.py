@@ -14,21 +14,25 @@ import os
 # import django_heroku
 import dj_database_url
 from decouple import config, Csv
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# cloudinary configurations
-cloudinary.config(
-    cloud_name='dcvxjw2fh',
-    api_key=637136597349424,
-    api_secret='LDa-ZpMbTFpJyVOKXm_etMVaYfk'
-)
+# Optional Cloudinary configuration read from environment variables
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+_CLOUDINARY_NAME = config('CLOUDINARY_CLOUD_NAME', default='')
+_CLOUDINARY_KEY = config('CLOUDINARY_API_KEY', default='')
+_CLOUDINARY_SECRET = config('CLOUDINARY_API_SECRET', default='')
+
+if _CLOUDINARY_NAME and _CLOUDINARY_KEY and _CLOUDINARY_SECRET:
+    cloudinary.config(
+        cloud_name=_CLOUDINARY_NAME,
+        api_key=_CLOUDINARY_KEY,
+        api_secret=_CLOUDINARY_SECRET,
+    )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/

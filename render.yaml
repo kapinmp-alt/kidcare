@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: kidcare-web
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn nanny_care.wsgi
+    envVars:
+      - key: SECRET_KEY
+        value: "<set-this-in-render>"
+        sync: false
+      - key: MODE
+        value: "prod"
+        sync: false
+      - key: DEBUG
+        value: "False"
+        sync: false
+      - key: ALLOWED_HOSTS
+        value: "your-app.onrender.com"
+        sync: false
+# If you use a managed Postgres database, Render will provide DATABASE_URL automatically
+# Add Cloudinary variables in the service Environment tab instead of storing them here.
