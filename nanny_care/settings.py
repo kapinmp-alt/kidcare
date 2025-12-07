@@ -37,10 +37,9 @@ cloudinary.config(
 # SECRET_KEY='django-insecure-otui)uq4xo5jnnvu3&ee$%#9&jex1_!siaz)cf&b(d14_82a6)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=True, cast=bool)
 MODE = config("MODE", default="dev")
-# DEBUG = config("DEBUG", default=True, cast=bool)
-SECRET_KEY=config("SECRET_KEY")
+SECRET_KEY = config("SECRET_KEY", default='dev-secret')
 
 # ALLOWED_HOSTS = []
 
@@ -113,12 +112,19 @@ WSGI_APPLICATION = 'nanny_care.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+# Default to SQLite for development
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# Use Postgres / DATABASE_URL in production (MODE != 'dev')
+if MODE != 'dev':
+    DATABASES = {
+        'default': dj_database_url.config(default=config('DATABASE_URL', default=''))
+    }
 
 # # development
 # if config("MODE") == 'dev':
@@ -146,7 +152,9 @@ DATABASES = {
 # db_from_env = dj_database_url.config(conn_max_age=500)
 # DATABASES['default'].update(db_from_env)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+if isinstance(ALLOWED_HOSTS, str):
+    ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS.split(',')]
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
