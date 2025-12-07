@@ -156,9 +156,27 @@ if MODE != 'dev':
 # db_from_env = dj_database_url.config(conn_max_age=500)
 # DATABASES['default'].update(db_from_env)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
-if isinstance(ALLOWED_HOSTS, str):
-    ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS.split(',')]
+# ALLOWED_HOSTS: prefer explicit env var; try common Render env vars; fallback to localhost.
+raw_allowed = config('ALLOWED_HOSTS', default='', cast=Csv())
+if isinstance(raw_allowed, str):
+    raw_allowed = [h.strip() for h in raw_allowed.split(',') if h.strip()]
+
+ALLOWED_HOSTS = [h for h in raw_allowed if h]
+
+# If ALLOWED_HOSTS is empty, try Render-provided host environment variables
+if not ALLOWED_HOSTS:
+    render_host = os.environ.get('RENDER_EXTERNAL_URL') or os.environ.get('RENDER_SERVICE_URL') or os.environ.get('RENDER_EXTERNAL_HOSTNAME') or os.environ.get('RENDER_INTERNAL_HOSTNAME') or os.environ.get('RENDER_ADDRESS')
+    if render_host:
+        # strip protocol if present
+        render_host = render_host.replace('http://', '').replace('https://', '').strip().strip('/')
+        ALLOWED_HOSTS = [render_host]
+
+# Final fallback
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+    if MODE != 'dev':
+        # In production, if no host was provided, allow all to avoid DisallowedHost during deploy.
+        ALLOWED_HOSTS.append('*')
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
