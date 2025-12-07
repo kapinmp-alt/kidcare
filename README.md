@@ -5,7 +5,6 @@
 ## Table of Content
 
 + [Description](#description)
-+ [Design](#design)
 + [Requirements](#requirements)
 + [Installation](#installation)
 + [Running Project](#running-project)
