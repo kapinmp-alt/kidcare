@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Book {{ nanny.name }} — Nanny Care{% endblock %}
+
+{% block content %}
+<!-- Booking Header -->
+<div style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); color: white; padding: 40px 20px; border-radius: 15px; margin-bottom: 40px;">
+    <div class="container">
+        <h1 class="fw-bold mb-2"><i class="fas fa-calendar-check me-3"></i>Book Nanny Service</h1>
+        <p class="lead mb-0">Select your preferred booking type and dates</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Nanny Profile Card -->
+        <div class="col-md-5">
+            <div class="card border-0 shadow-lg rounded-3 overflow-hidden" style="position: sticky; top: 100px;">
+                <div style="height: 300px; background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    {% if nanny.profile_pic %}
+                        <img src="{{ nanny.profile_pic.url }}" alt="{{ nanny.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                        <i class="fas fa-user fa-5x" style="color: white; opacity: 0.5;"></i>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title fw-bold" style="color: #FF6B9D;">{{ nanny.name }}</h3>
+                    
+                    <div class="mb-3 pb-3 border-bottom">
+                        <p class="mb-2"><i class="fas fa-birthday-cake me-2" style="color: #FFA502;"></i><strong>Age:</strong> {{ nanny.age }}</p>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2" style="color: #FF6B9D;"></i><strong>Location:</strong> {{ nanny.location }}</p>
+                        <p class="mb-2"><i class="fas fa-briefcase me-2" style="color: #20C997;"></i><strong>Experience:</strong> {{ nanny.experience }}</p>
+                        <p class="mb-0"><i class="fas fa-dollar-sign me-2" style="color: #FFA502;"></i><strong>Rate:</strong> ${{ nanny.rates }}/hour</p>
+                    </div>
+
+                    {% if nanny.about %}
+                    <p class="text-secondary small mb-3">
+                        <strong><i class="fas fa-info-circle me-2" style="color: #FF6B9D;"></i>About:</strong><br>
+                        {{ nanny.about }}
+                    </p>
+                    {% endif %}
+
+                    {% if nanny.skills %}
+                    <p class="text-secondary small">
+                        <strong><i class="fas fa-star me-2" style="color: #FFA502;"></i>Skills:</strong><br>
+                        {{ nanny.skills }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Form -->
+        <div class="col-md-7">
+            <form method="POST" class="card border-0 shadow-lg rounded-3 p-4">
+                {% csrf_token %}
+                <h4 class="fw-bold mb-4" style="color: #FF6B9D;">
+                    <i class="fas fa-edit me-2"></i>Booking Details
+                </h4>
+
+                <!-- Booking Type -->
+                <div class="mb-4">
+                    <label for="bookingType" class="form-label fw-bold">Booking Type <span style="color: #FF6B9D;">*</span></label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="booking_type" id="fullTime" value="full_time" required>
+                            <label class="form-check-label" for="fullTime">
+                                <i class="fas fa-moon me-2" style="color: #FF6B9D;"></i>Full Time (24/7)
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="booking_type" id="partTime" value="part_time" required>
+                            <label class="form-check-label" for="partTime">
+                                <i class="fas fa-clock me-2" style="color: #FFA502;"></i>Part Time (Hourly)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Start Date -->
+                <div class="mb-4">
+                    <label for="startDate" class="form-label fw-bold">Start Date <span style="color: #FF6B9D;">*</span></label>
+                    <input 
+                        type="date" 
+                        class="form-control rounded-3" 
+                        id="startDate" 
+                        name="start_date" 
+                        required
+                        style="border: 2px solid #f0f0f0; padding: 12px;"
+                    >
+                    <small class="text-secondary">When do you need the nanny services to start?</small>
+                </div>
+
+                <!-- End Date -->
+                <div class="mb-4">
+                    <label for="endDate" class="form-label fw-bold">End Date <span style="color: #FF6B9D;">*</span></label>
+                    <input 
+                        type="date" 
+                        class="form-control rounded-3" 
+                        id="endDate" 
+                        name="end_date" 
+                        required
+                        style="border: 2px solid #f0f0f0; padding: 12px;"
+                    >
+                    <small class="text-secondary">When will the services end?</small>
+                </div>
+
+                <!-- Summary -->
+                <div class="alert alert-info rounded-3 mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Booking Summary:</strong>
+                    <div id="summary" class="mt-2 small">
+                        Select booking type and dates to see summary
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-lg fw-bold w-100 text-white" style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); border: none; border-radius: 10px; padding: 14px; transition: all 0.3s;">
+                    <i class="fas fa-check-circle me-2"></i>Confirm Booking
+                </button>
+
+                <a href="{% url 'company_list' %}" class="btn btn-outline-secondary btn-lg fw-bold w-100 mt-2" style="border-radius: 10px; padding: 14px;">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bookingTypeInputs = document.querySelectorAll('input[name="booking_type"]');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const summaryDiv = document.getElementById('summary');
+
+    function updateSummary() {
+        const bookingType = document.querySelector('input[name="booking_type"]:checked')?.value || 'Not selected';
+        const startDate = startDateInput.value || 'Not set';
+        const endDate = endDateInput.value || 'Not set';
+        
+        const typeDisplay = bookingType === 'full_time' ? 'Full Time (24/7)' : bookingType === 'part_time' ? 'Part Time (Hourly)' : 'Not selected';
+        
+        summaryDiv.innerHTML = `
+            <div><strong>Type:</strong> ${typeDisplay}</div>
+            <div><strong>Start:</strong> ${startDate}</div>
+            <div><strong>End:</strong> ${endDate}</div>
+        `;
+    }
+
+    bookingTypeInputs.forEach(input => input.addEventListener('change', updateSummary));
+    startDateInput.addEventListener('change', updateSummary);
+    endDateInput.addEventListener('change', updateSummary);
+});
+</script>
+
+{% endblock %}

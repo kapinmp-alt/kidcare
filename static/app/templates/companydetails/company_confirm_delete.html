@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Company - Nanny Care{% endblock %}
+
+{% block content %}
+<div class="py-5">
+  <h3>Delete Company</h3>
+  <p>Are you sure you want to delete <strong>{{ company.name }}</strong>? This action cannot be undone.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a class="btn btn-secondary ms-2" href="{% url 'company_list' %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

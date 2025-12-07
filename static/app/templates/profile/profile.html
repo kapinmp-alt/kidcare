@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}My Profile — Nanny Care{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Profile Card -->
+            <div class="card border-0 shadow-lg rounded-3 overflow-hidden mb-4">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); padding: 40px 20px;">
+                    <div class="text-center text-white">
+                        <div class="mb-3">
+                            {% if user.userprofile.profile_pic %}
+                                <img src="{{ user.userprofile.profile_pic.url }}" 
+                                     alt="Profile Picture" 
+                                     class="rounded-circle"
+                                     style="width: 120px; height: 120px; object-fit: cover; border: 5px solid white;">
+                            {% else %}
+                                <i class="fas fa-user-circle" style="font-size: 120px; color: white; opacity: 0.8;"></i>
+                            {% endif %}
+                        </div>
+                        <h2 class="fw-bold mb-0">{{ user.first_name|default:user.username }}</h2>
+                        <p class="text-white-50 mb-0">@{{ user.username }}</p>
+                    </div>
+                </div>
+
+                <!-- Profile Info -->
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Full Name</label>
+                            <p class="fs-5">{{ user.get_full_name|default:"Not set" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Email</label>
+                            <p class="fs-5">{{ user.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Username</label>
+                            <p class="fs-5">{{ user.username }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary">Member Since</label>
+                            <p class="fs-5">{{ user.date_joined|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+
+                    {% if user.userprofile.bio %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary">Bio</label>
+                        <p class="fs-5">{{ user.userprofile.bio }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-lg fw-bold rounded-2" 
+                                id="update-btn"
+                                style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); border: none;">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Stats -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg rounded-3 p-4 mb-4">
+                <h6 class="text-secondary fw-bold mb-3">Account Statistics</h6>
+                <div class="text-center">
+                    <p class="text-secondary small mb-1">Total Bookings</p>
+                    <h3 class="fw-bold" style="color: #FF6B9D;">{{ bookings|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Section -->
+    <div class="mt-5">
+        <h3 class="fw-bold mb-4" style="color: #FF6B9D;">
+            <i class="fas fa-calendar-check me-2"></i>My Bookings
+        </h3>
+
+        {% if bookings %}
+            <div class="row g-4">
+                {% for booking in bookings %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-lg rounded-3 overflow-hidden h-100">
+                        <!-- Header -->
+                        <div style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); padding: 20px; color: white;">
+                            <h5 class="fw-bold mb-0">{{ booking.nanny.name }}</h5>
+                            <small>{{ booking.company.name }}</small>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="card-body">
+                            <!-- Status Badge -->
+                            <div class="mb-3">
+                                {% if booking.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-clock me-1"></i>Pending Approval
+                                    </span>
+                                {% elif booking.status == 'confirmed' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Confirmed
+                                    </span>
+                                {% elif booking.status == 'completed' %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-flag-checkered me-1"></i>Completed
+                                    </span>
+                                {% elif booking.status == 'cancelled' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle me-1"></i>Cancelled
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Booking Details -->
+                            <p class="mb-2">
+                                <strong>Type:</strong>
+                                {% if booking.booking_type == 'full_time' %}
+                                    <span style="color: #FF6B9D;">Full Time (24/7)</span>
+                                {% else %}
+                                    <span style="color: #FFA502;">Part Time (Hourly)</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar me-2" style="color: #FF6B9D;"></i>
+                                <strong>Start:</strong> {{ booking.start_date|date:"M d, Y" }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar me-2" style="color: #FF6B9D;"></i>
+                                <strong>End:</strong> {{ booking.end_date|date:"M d, Y" }}
+                            </p>
+                            <p class="mb-3 small text-secondary">
+                                <i class="fas fa-clock me-1"></i>
+                                Booked on {{ booking.created_at|date:"M d, Y" }}
+                            </p>
+
+                            <!-- Nanny Info -->
+                            {% if booking.nanny.rates %}
+                            <p class="mb-0">
+                                <i class="fas fa-dollar-sign me-1" style="color: #FFA502;"></i>
+                                <strong>${{ booking.nanny.rates }}/hour</strong>
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="card-footer bg-light border-0 p-3">
+                            <form method="POST" action="{% url 'cancel_booking' booking.id %}" onsubmit="return confirm('Are you sure you want to cancel this booking?');" style="width: 100%;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100 rounded-2" 
+                                        {% if booking.status == 'cancelled' or booking.status == 'completed' %}disabled{% endif %}>
+                                    <i class="fas fa-trash me-1"></i>
+                                    {% if booking.status == 'cancelled' %}Cancelled{% elif booking.status == 'completed' %}Completed{% else %}Cancel Booking{% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info rounded-3" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>No bookings yet!</strong> 
+                <a href="{% url 'company_list' %}" class="alert-link">Browse our nannies and make your first booking.</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Edit Form Modal -->
+    <div class="update-form" id="updateForm" style="display: none; margin-top: 40px;">
+        <div class="card border-0 shadow-lg rounded-3 overflow-hidden">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); padding: 30px 20px;">
+                <h3 class="text-white fw-bold mb-0">
+                    <i class="fas fa-edit me-2"></i>Edit Your Profile
+                </h3>
+            </div>
+
+            <!-- Form -->
+            <div class="card-body p-5">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-user me-2" style="color: #FF6B9D;"></i>First Name
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg rounded-2" 
+                                   name="first_name" 
+                                   value="{{ user.first_name }}"
+                                   placeholder="First name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-user me-2" style="color: #FF6B9D;"></i>Last Name
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-control-lg rounded-2" 
+                                   name="last_name" 
+                                   value="{{ user.last_name }}"
+                                   placeholder="Last name">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-envelope me-2" style="color: #FF6B9D;"></i>Email
+                            </label>
+                            <input type="email" 
+                                   class="form-control form-control-lg rounded-2" 
+                                   name="email" 
+                                   value="{{ user.email }}"
+                                   placeholder="Email">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-image me-2" style="color: #FF6B9D;"></i>Profile Picture
+                            </label>
+                            {{ form.profile_pic }}
+                            <small class="text-secondary">JPG, PNG or GIF (max 5MB)</small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-pen me-2" style="color: #FF6B9D;"></i>Bio
+                            </label>
+                            {{ form.bio }}
+                            <small class="text-secondary">Tell us about yourself</small>
+                        </div>
+                    </div>
+
+                    {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                            <strong>Error!</strong> Please check the form and try again.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold w-100 rounded-2" 
+                                    style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); border: none;">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-secondary btn-lg fw-bold w-100 rounded-2" 
+                                    id="cancel-btn">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border: 2px solid #E9EEF5;
+        border-radius: 10px;
+        font-size: 1rem;
+        padding: 0.75rem 1.25rem;
+    }
+    .form-control:focus {
+        border-color: #FF6B9D;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 157, 0.25);
+    }
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+</style>
+
+<script>
+    document.getElementById('update-btn').addEventListener('click', function() {
+        document.getElementById('updateForm').style.display = 'block';
+        window.scrollTo({ top: document.getElementById('updateForm').offsetTop - 100, behavior: 'smooth' });
+    });
+
+    document.getElementById('cancel-btn').addEventListener('click', function() {
+        document.getElementById('updateForm').style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+</script>
+{% endblock %}

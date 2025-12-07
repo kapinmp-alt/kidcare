@@ -1,0 +1,11 @@
+/* Modern Nanny Care CSS */
+body { font-family: 'Poppins', sans-serif; background: #f8f9fa; color: #333; }
+:root { --primary-pink: #FF6B9D; --primary-orange: #FFA502; --text-dark: #333; }
+.container { max-width: 1100px; }
+.navbar { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.btn-primary { background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); border: none; }
+.card { border-radius: 12px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.site-footer { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 50px 0 20px; }
+@media (max-width: 576px) { h1 { font-size: 1.75rem; } .card-img-top { height: 240px; } }
+@media (max-width: 768px) { .card-img-top { height: 200px; } }

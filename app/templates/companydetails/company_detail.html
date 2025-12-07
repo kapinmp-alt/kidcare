@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ company.name }} — Nanny Care{% endblock %}
+
+{% block content %}
+<!-- Company Header -->
+<div style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); color: white; padding: 40px 20px; border-radius: 15px; margin-bottom: 40px; text-align: center;">
+    <div class="container">
+        {% if company.image %}
+            <img src="{{ company.image.url }}" alt="{{ company.name }}" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 5px solid white; margin-bottom: 20px;">
+        {% endif %}
+        <h1 class="fw-bold mb-2">{{ company.name }}</h1>
+        <p class="lead mb-0">{{ company.description }}</p>
+        <p class="small mt-2">
+            <i class="fas fa-map-marker-alt me-2"></i>{{ company.location }}
+        </p>
+        <p class="small">
+            <i class="fas fa-users me-2"></i><strong>{{ nannies|length }} Professional Nannies</strong>
+        </p>
+    </div>
+</div>
+
+<!-- Nannies Section -->
+<div class="container mb-5">
+    <h2 class="fw-bold mb-4" style="color: #FF6B9D;">Meet Our Nannies</h2>
+    
+    <div class="row g-4">
+        {% if nannies %}
+            {% for nanny in nannies %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-lg rounded-3 h-100 overflow-hidden" style="transition: all 0.3s;">
+                    <!-- Card Image -->
+                    {% if nanny.profile_pic %}
+                        <img src="{{ nanny.profile_pic.url }}" alt="{{ nanny.name }}" class="card-img-top" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                        <div style="height: 250px; background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user fa-4x" style="color: white; opacity: 0.5;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Card Body -->
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold" style="color: #FF6B9D;">{{ nanny.name }}</h5>
+                        
+                        <div class="mb-3">
+                            <p class="mb-2"><i class="fas fa-birthday-cake me-2" style="color: #FFA502;"></i><strong>Age:</strong> {{ nanny.age }}</p>
+                            <p class="mb-2"><i class="fas fa-map-marker-alt me-2" style="color: #FF6B9D;"></i><strong>Location:</strong> {{ nanny.location }}</p>
+                            <p class="mb-2"><i class="fas fa-check-circle me-2" style="color: #20C997;"></i><strong>Available:</strong> 
+                                {% if nanny.availability %}Yes{% else %}No{% endif %}
+                            </p>
+                        </div>
+
+                        {% if nanny.about %}
+                        <p class="card-text text-secondary small mb-3">
+                            <i class="fas fa-info-circle me-2" style="color: #FF6B9D;"></i><strong>About:</strong> {{ nanny.about|truncatewords:20 }}
+                        </p>
+                        {% endif %}
+
+                        {% if nanny.skills %}
+                        <p class="card-text text-secondary small mb-3">
+                            <i class="fas fa-star me-2" style="color: #FFA502;"></i><strong>Skills:</strong> {{ nanny.skills|truncatewords:15 }}
+                        </p>
+                        {% endif %}
+
+                        <a href="{% url 'booking' nanny.name %}" class="btn btn-primary fw-bold mt-auto" style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); border: none;">
+                            <i class="fas fa-calendar-check me-2"></i>Book Nanny
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center rounded-3" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>No nannies available at this company yet.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Social & Contact Section -->
+<div style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 50px 20px; margin-top: 60px;">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <h6 class="fw-bold mb-3" style="color: #FF6B9D;">About Us</h6>
+                <p class="small">We connect families with professional and trusted nannies for quality childcare.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <h6 class="fw-bold mb-3" style="color: #FF6B9D;">Follow Us</h6>
+                <div>
+                    <a href="https://www.facebook.com/NannyCare/" target="_blank" class="me-2" style="color: white; font-size: 1.5rem;"><i class="fab fa-facebook"></i></a>
+                    <a href="https://www.twitter.com/NannyCare/" target="_blank" class="me-2" style="color: white; font-size: 1.5rem;"><i class="fab fa-twitter"></i></a>
+                    <a href="https://instagram.com/NannyCare" target="_blank" class="me-2" style="color: white; font-size: 1.5rem;"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <h6 class="fw-bold mb-3" style="color: #FF6B9D;">Contact</h6>
+                <p class="small mb-0"><i class="fas fa-phone me-2"></i>+1 (555) 123-4567</p>
+                <p class="small"><i class="fas fa-envelope me-2"></i>info@nannycare.com</p>
+            </div>
+        </div>
+        <hr class="bg-secondary my-4">
+        <p class="text-center small">&copy; {% now "Y" %} Nanny Care. All rights reserved.</p>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Companies - Nanny Care{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="mb-0">Our Companies</h2>
+      <p class="text-muted small">Browse nanny companies that provide vetted nannies.</p>
+    </div>
+    <div>
+      <a href="{% url 'company_create' %}" class="btn btn-sm btn-primary">Add Company</a>
+    </div>
+  </div>
+
+  <div class="row gy-4">
+    {% for company in companies %}
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        {% if company.image %}
+        <img src="{{ company.image.url }}" class="card-img-top" alt="{{ company.name }}">
+        {% else %}
+        <img src="{% static 'img/nanny1.webp' %}" class="card-img-top" alt="{{ company.name }}">
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">{{ company.name }}</h5>
+          <p class="card-text small text-muted mb-3">{{ company.description|truncatechars:120 }}</p>
+          <div class="mt-auto d-flex justify-content-between align-items-center">
+            <small class="text-muted">{{ company.location }}</small>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#companyModal{{ forloop.counter }}">View</button>
+              {% if company.slug %}
+                <a class="btn btn-sm btn-primary" href="{% url 'companydetails' company.slug %}">Open page</a>
+              {% else %}
+                <a class="btn btn-sm btn-primary" href="{% url 'companydetails_pk' company.pk %}">Open page</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <p class="text-muted">No companies found.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+      <!-- Modal used to load forms dynamically -->
+      <div class="modal fade" id="companyFormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="companyFormTitle">Company</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="companyFormBody">
+              <!-- AJAX form will be injected here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast container -->
+      <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-header">
+            <strong class="me-auto">NannyCare</strong>
+            <small class="text-muted">now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body" id="toastBody">Saved</div>
+        </div>
+      </div>
+    {# Modals for each company (Bootstrap) #}
+    {% for company in companies %}
+    <div class="modal fade" id="companyModal{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ company.name }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6">
+                <p class="text-muted">{{ company.description }}</p>
+                <p><strong>Location:</strong> {{ company.location }}</p>
+                <p><strong>Contact:</strong> {{ company.email }}</p>
+              </div>
+              <div class="col-md-6">
+                <h6 class="mb-2">Nannies</h6>
+                <div class="list-group">
+                  {% for nanny in company.nanny_set.all %}
+                  <div class="list-group-item d-flex align-items-center">
+                    <img src="{% static 'img/nanny1.webp' %}" alt="nanny" class="rounded me-3" style="width:56px;height:56px;object-fit:cover">
+                    <div>
+                      <div class="fw-semibold">{{ nanny.name }}</div>
+                      <small class="text-muted">{{ nanny.experience }} • KES {{ nanny.rates }}</small>
+                      <p class="mb-0 small text-muted">{{ nanny.about|truncatechars:80 }}</p>
+                    </div>
+                  </div>
+                  {% empty %}
+                  <div class="list-group-item text-muted">No nannies listed for this company.</div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="d-flex w-100 justify-content-between">
+              <div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+              <div>
+                <a class="btn btn-sm btn-outline-secondary me-2" href="{% url 'company_update' company.pk %}">Edit</a>
+                <a class="btn btn-sm btn-danger" href="{% url 'company_delete' company.pk %}">Delete</a>
+                {% if company.slug %}
+                  <a class="btn btn-primary ms-2" href="{% url 'companydetails' company.slug %}">Open company page</a>
+                {% else %}
+                  <a class="btn btn-primary ms-2" href="{% url 'companydetails_pk' company.pk %}">Open company page</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+    {% comment %} AJAX script for modal forms and deletion {% endcomment %}
+    <script>
+      // helper: read CSRF token from cookie
+      function getCookie(name) {
+        const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+        return v ? decodeURIComponent(v[2]) : null;
+      }
+
+      async function openForm(url, title) {
+        const modal = new bootstrap.Modal(document.getElementById('companyFormModal'));
+        document.getElementById('companyFormTitle').textContent = title || 'Company';
+        // fetch form fragment
+        const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const data = await res.json();
+        if (data.html) {
+          document.getElementById('companyFormBody').innerHTML = data.html;
+          modal.show();
+          bindFormSubmit(url);
+        }
+      }
+
+      function showToast(message) {
+        document.getElementById('toastBody').textContent = message;
+        const toastEl = document.getElementById('liveToast');
+        const t = new bootstrap.Toast(toastEl);
+        t.show();
+      }
+
+      function bindFormSubmit(actionUrl) {
+        const form = document.getElementById('company-form');
+        if (!form) return;
+        form.addEventListener('submit', async function (ev) {
+          ev.preventDefault();
+          const formData = new FormData(form);
+          const res = await fetch(actionUrl, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCookie('csrftoken') },
+            body: formData
+          });
+          const data = await res.json();
+          if (data.success) {
+            showToast('Saved. Reloading...');
+            setTimeout(() => location.reload(), 900);
+          } else if (data.html) {
+            document.getElementById('companyFormBody').innerHTML = data.html;
+            bindFormSubmit(actionUrl);
+          }
+        });
+      }
+
+      // delegate clicks on Add/Edit/Delete links
+      document.addEventListener('click', function (e) {
+        const target = e.target.closest('a');
+        if (!target) return;
+        // Add Company
+        if (target.matches('a[href][href*="company/add"]')) {
+          e.preventDefault();
+          openForm(target.href, 'Add Company');
+          return;
+        }
+        // Edit
+        if (target.matches('a[href][href*="/edit/"]')) {
+          e.preventDefault();
+          openForm(target.href, 'Edit Company');
+          return;
+        }
+        // Delete (open delete confirm in modal)
+        if (target.matches('a[href][href*="/delete/"]')) {
+          e.preventDefault();
+          (async () => {
+            const res = await fetch(target.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await res.json();
+            if (data.html) {
+              const modal = new bootstrap.Modal(document.getElementById('companyFormModal'));
+              document.getElementById('companyFormTitle').textContent = 'Confirm Delete';
+              document.getElementById('companyFormBody').innerHTML = data.html;
+              modal.show();
+              // bind confirm button
+              document.getElementById('confirm-delete').addEventListener('click', async function () {
+                const resp = await fetch(target.href, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCookie('csrftoken') } });
+                const r = await resp.json();
+                if (r.success) {
+                  showToast('Deleted. Reloading...');
+                  setTimeout(() => location.reload(), 900);
+                }
+              });
+            }
+          })();
+          return;
+        }
+      });
+    </script>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — Nanny Care{% endblock %}
+
+{% block content %}
+
+<!-- Header Section -->
+<div style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); color: white; padding: 40px 20px; border-radius: 15px; margin-bottom: 40px;">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-2">Welcome back, {{ user.first_name|default:user.username }}! 👋</h1>
+        <p class="lead mb-0">Explore available nannies and companies, and manage your bookings</p>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="container mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 p-4 text-center">
+                <i class="fas fa-building fa-2x mb-3" style="color: #FF6B9D;"></i>
+                <h6 class="text-secondary fw-bold">Companies</h6>
+                <h2 class="fw-bold" style="color: #FF6B9D;">{{ companies|length }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 p-4 text-center">
+                <i class="fas fa-users fa-2x mb-3" style="color: #FFA502;"></i>
+                <h6 class="text-secondary fw-bold">Available Nannies</h6>
+                <h2 class="fw-bold" style="color: #FFA502;">{{ companies|length|add:'0' }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 p-4 text-center">
+                <i class="fas fa-calendar-check fa-2x mb-3" style="color: #20C997;"></i>
+                <h6 class="text-secondary fw-bold">My Bookings</h6>
+                <h2 class="fw-bold" style="color: #20C997;">{{ total_bookings }}</h2>
+                <small class="text-secondary">
+                    <span style="color: #FFA502;">{{ pending_bookings }} pending</span> | 
+                    <span style="color: #20C997;">{{ confirmed_bookings }} confirmed</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Companies Section -->
+<div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Featured Companies</h2>
+        <a href="/companydetails/" class="btn btn-primary fw-bold" style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); border: none;">
+            <i class="fas fa-arrow-right me-2"></i>View All
+        </a>
+    </div>
+
+    {% if companies %}
+        <div class="row g-4">
+            {% for company in companies|slice:":3" %}
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100 hover-card" style="transition: all 0.3s;">
+                    {% if company.image %}
+                        <img src="{{ company.image.url }}" alt="{{ company.name }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div style="height: 200px; background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%);"></div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ company.name }}</h5>
+                        <p class="card-text text-secondary small">{{ company.description|truncatewords:15 }}</p>
+                        <p class="text-secondary small mb-3">
+                            <i class="fas fa-map-marker-alt me-2" style="color: #FF6B9D;"></i>{{ company.location|default:"Location not specified" }}
+                        </p>
+                        <a href="{% url 'companydetails' slug=company.slug %}" class="btn btn-primary btn-sm w-100" style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); border: none;">
+                            <i class="fas fa-eye me-2"></i>View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center rounded-3" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            No companies available yet. Check back soon!
+        </div>
+    {% endif %}
+</div>
+
+<!-- Recent Bookings Section -->
+<div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Recent Bookings</h2>
+        <a href="{% url 'profile' username=user.username %}" class="btn btn-primary fw-bold" style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); border: none;">
+            <i class="fas fa-arrow-right me-2"></i>View All
+        </a>
+    </div>
+
+    {% if bookings %}
+        <div class="row g-4">
+            {% for booking in bookings %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, #FF6B9D 0%, #FFA502 100%); padding: 20px; color: white;">
+                        <h5 class="fw-bold mb-0">{{ booking.nanny.name }}</h5>
+                        <small>{{ booking.company.name }}</small>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="card-body">
+                        <!-- Status Badge -->
+                        <div class="mb-3">
+                            {% if booking.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-clock me-1"></i>Pending
+                                </span>
+                            {% elif booking.status == 'confirmed' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>Confirmed
+                                </span>
+                            {% elif booking.status == 'completed' %}
+                                <span class="badge bg-info">
+                                    <i class="fas fa-flag-checkered me-1"></i>Completed
+                                </span>
+                            {% elif booking.status == 'cancelled' %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times-circle me-1"></i>Cancelled
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Booking Type -->
+                        <p class="mb-2">
+                            {% if booking.booking_type == 'full_time' %}
+                                <i class="fas fa-moon me-1" style="color: #FF6B9D;"></i>
+                                <strong>Full Time (24/7)</strong>
+                            {% else %}
+                                <i class="fas fa-clock me-1" style="color: #FFA502;"></i>
+                                <strong>Part Time (Hourly)</strong>
+                            {% endif %}
+                        </p>
+
+                        <!-- Dates -->
+                        <p class="mb-2 small text-secondary">
+                            <i class="fas fa-calendar-alt me-1" style="color: #FF6B9D;"></i>
+                            {{ booking.start_date|date:"M d" }} - {{ booking.end_date|date:"M d, Y" }}
+                        </p>
+
+                        <!-- Rate -->
+                        {% if booking.nanny.rates %}
+                        <p class="mb-0 small">
+                            <i class="fas fa-dollar-sign me-1" style="color: #FFA502;"></i>
+                            <strong>${{ booking.nanny.rates }}/hour</strong>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center rounded-3" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>No bookings yet!</strong> 
+            <a href="/companydetails/" class="alert-link">Start by browsing our companies and nannies.</a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- CTA Section -->
+<div class="container mb-5">
+    <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 60px 30px; border-radius: 15px; text-align: center;">
+        <h2 class="fw-bold mb-3">Looking for more options?</h2>
+        <p class="lead mb-4">Browse our complete directory of trusted nannies and childcare companies</p>
+        <a href="/companydetails/" class="btn btn-light btn-lg fw-bold px-5">
+            <i class="fas fa-search me-2"></i>Explore All Companies
+        </a>
+    </div>
+</div>
+
+<style>
+    .hover-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(255, 107, 157, 0.2) !important;
+    }
+</style>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
