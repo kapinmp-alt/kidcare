@@ -397,3 +397,28 @@ Notes:
 - Remove any hard-coded secrets from source — this repo now reads Cloudinary values from env.
 
 I also added a `render.yaml` template in the repo to help declare the service. You can edit it and push it, or configure the service via the Render dashboard.
+
+## Production database (Render Postgres) — recommended
+
+You're currently using SQLite by default which is fine for development but is not suitable for production on Render because the filesystem is ephemeral. To resolve the `no such table: auth_user` errors reliably and persist data, add a managed Postgres database and attach it to your Render service.
+
+Steps:
+
+1. In the Render dashboard, go to **New** → **Postgres** (Managed Database) and create a database. Choose a region and plan.
+2. In your Web Service (the nanny-care service), open **Environment** → **Databases** and **Attach Database**; select the Postgres instance you created. Render will set a `DATABASE_URL` environment variable for the service automatically.
+3. Also set these environment variables in the Web Service settings:
+    - `MODE` = `prod`
+    - `DEBUG` = `False`
+    - `SECRET_KEY` = a secure random string
+    - `ALLOWED_HOSTS` = your app hostname (e.g. `kidcare-hb0e.onrender.com`)
+
+4. Redeploy the service (Render will pick up the `DATABASE_URL`). The start command is configured to run migrations automatically, but you can also run migrations manually from the shell:
+
+```bash
+render shell # or use the dashboard's shell terminal
+python manage.py migrate
+```
+
+5. Verify the app: visit your Render URL and confirm registration/login work.
+
+If you don't want to use Render Postgres immediately, the repository is configured to run `migrate` on startup. However, using SQLite on Render is fragile and may lead to missing tables or lost data across deploys — switching to Postgres is the recommended fix.
