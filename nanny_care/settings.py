@@ -124,11 +124,20 @@ DATABASES = {
     }
 }
 
-# Use Postgres / DATABASE_URL in production (MODE != 'dev')
-if MODE != 'dev':
+# If a DATABASE_URL is provided (e.g. Render managed Postgres), prefer it
+# regardless of MODE. This lets deployments use a persistent DB when the
+# env var is set while keeping SQLite as a local dev fallback.
+database_url = config('DATABASE_URL', default='')
+if database_url:
     DATABASES = {
-        'default': dj_database_url.config(default=config('DATABASE_URL', default=''))
+        'default': dj_database_url.config(default=database_url)
     }
+else:
+    # Use Postgres / DATABASE_URL in production (MODE != 'dev')
+    if MODE != 'dev':
+        DATABASES = {
+            'default': dj_database_url.config(default=config('DATABASE_URL', default=''))
+        }
 
 # # development
 # if config("MODE") == 'dev':
