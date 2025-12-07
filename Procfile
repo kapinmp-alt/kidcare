@@ -1,1 +1,1 @@
-web: gunicorn nanny_care.wsgi
+web: gunicorn nanny_care.wsgi:application --bind 0.0.0.0:$PORT
